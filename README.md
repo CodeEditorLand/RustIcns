@@ -14,8 +14,8 @@ other pixel formats (in case you need to transfer the image data to another
 library that expects the data in a particular format), and saving/loading those
 images to/from PNG files.
 
-The [crate documentation](https://docs.rs/tauri-icns) has more information about
-how to use the library.
+The [crate documentation](https://docs.rs/tauri-icns) has more information about how
+to use the library.
 
 ## Example usage
 
@@ -48,22 +48,22 @@ fn main() {
 
 ## Supported icon types
 
-ICNS files can contain a number of different icon types. This library supports
+ICNS files can contain a number of different icon types.  This library supports
 the most commonly-used types, but some of the older ones are not yet supported.
 The table below indicates which types are currently supported; see
 https://en.wikipedia.org/wiki/Apple_Icon_Image_format#Icon_types for more
 information about each type.
 
-The biggest limitation at this time is that a number of the newer icon types can
-be encoded with either PNG or JPEG 2000 data, but this library does not yet
+The biggest limitation at this time is that a number of the newer icon types
+can be encoded with either PNG or JPEG 2000 data, but this library does not yet
 support JPEG 2000; attempting to decode such an icon will result an an error
 value being returned (although you can still decode other icons from the same
-ICNS file). The reason for this is that I don't currently know of any JPEG 2000
-libraries for Rust; if one exists, please feel free to file a bug or send a pull
-request.
+ICNS file).  The reason for this is that I don't currently know of any JPEG
+2000 libraries for Rust; if one exists, please feel free to file a bug or send
+a pull request.
 
 | OSType | Description                             | Supported? |
-| ------ | --------------------------------------- | ---------- |
+|--------|-----------------------------------------|------------|
 | `ICON` | 32×32 1-bit icon                        | No         |
 | `ICN#` | 32×32 1-bit icon with 1-bit mask        | No         |
 | `icm#` | 16×12 1-bit icon with 1-bit mask        | No         |
