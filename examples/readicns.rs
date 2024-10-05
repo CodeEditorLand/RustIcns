@@ -1,6 +1,7 @@
 extern crate tauri_icns;
 
 use std::{env, fs::File, io::BufReader};
+
 use tauri_icns::IconFamily;
 
 fn main() {
@@ -14,6 +15,11 @@ fn main() {
 	let family = IconFamily::read(buffered).expect("failed to read ICNS file");
 	println!("ICNS file contains {} element(s).", family.elements.len());
 	for (index, element) in family.elements.iter().enumerate() {
-		println!("Element {}: {} ({} byte payload)", index, element.ostype, element.data.len());
+		println!(
+			"Element {}: {} ({} byte payload)",
+			index,
+			element.ostype,
+			element.data.len()
+		);
 	}
 }
