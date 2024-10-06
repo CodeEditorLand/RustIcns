@@ -31,10 +31,7 @@ impl Image {
 				// TODO: Support other color types.
 				return Err(io::Error::new(
 					io::ErrorKind::InvalidData,
-					format!(
-						"unsupported PNG color type: {:?}",
-						info.color_type
-					),
+					format!("unsupported PNG color type: {:?}", info.color_type),
 				));
 			},
 		};
@@ -59,9 +56,7 @@ impl Image {
 			PixelFormat::GrayAlpha => png::ColorType::GrayscaleAlpha,
 			PixelFormat::Gray => png::ColorType::Grayscale,
 			PixelFormat::Alpha => {
-				return self
-					.convert_to(PixelFormat::GrayAlpha)
-					.write_png(output);
+				return self.convert_to(PixelFormat::GrayAlpha).write_png(output);
 			},
 			PixelFormat::PNG => {
 				return output.write(&self.data).map(|_| ());

@@ -29,9 +29,7 @@ impl IconFamily {
 	/// an error if there is no supported icon type matching the image
 	/// dimensions.
 	pub fn add_icon(&mut self, image:&Image) -> io::Result<()> {
-		if let Some(icon_type) =
-			IconType::from_pixel_size(image.width(), image.height())
-		{
+		if let Some(icon_type) = IconType::from_pixel_size(image.width(), image.height()) {
 			self.add_icon_with_type(image, icon_type)
 		} else {
 			let msg = format!(
@@ -47,16 +45,10 @@ impl IconFamily {
 	/// selected type has an associated mask type, the image mask will also be
 	/// added to the family.  Returns an error if the image has the wrong
 	/// dimensions for the selected type.
-	pub fn add_icon_with_type(
-		&mut self,
-		image:&Image,
-		icon_type:IconType,
-	) -> io::Result<()> {
-		self.elements
-			.push(IconElement::encode_image_with_type(image, icon_type)?);
+	pub fn add_icon_with_type(&mut self, image:&Image, icon_type:IconType) -> io::Result<()> {
+		self.elements.push(IconElement::encode_image_with_type(image, icon_type)?);
 		if let Some(mask_type) = icon_type.mask_type() {
-			self.elements
-				.push(IconElement::encode_image_with_type(image, mask_type)?);
+			self.elements.push(IconElement::encode_image_with_type(image, mask_type)?);
 		}
 		Ok(())
 	}
@@ -115,10 +107,7 @@ impl IconFamily {
 	fn find_element(&self, icon_type:IconType) -> io::Result<&IconElement> {
 		let ostype = icon_type.ostype();
 		self.elements.iter().find(|el| el.ostype == ostype).ok_or_else(|| {
-			let msg = format!(
-				"the icon family does not contain a '{}' element",
-				ostype
-			);
+			let msg = format!("the icon family does not contain a '{}' element", ostype);
 			Error::new(ErrorKind::NotFound, msg)
 		})
 	}
@@ -201,8 +190,7 @@ mod tests {
 
 	#[test]
 	fn read_icon_family_with_fake_elements() {
-		let input:Cursor<&[u8]> =
-			Cursor::new(b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#");
+		let input:Cursor<&[u8]> = Cursor::new(b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#");
 		let family = IconFamily::read(input).expect("read failed");
 		assert_eq!(2, family.elements.len());
 		assert_eq!(OSType(*b"quux"), family.elements[0].ostype);
@@ -214,16 +202,11 @@ mod tests {
 	#[test]
 	fn write_icon_family_with_fake_elements() {
 		let mut family = IconFamily::new();
-		family
-			.elements
-			.push(IconElement::new(OSType(*b"quux"), b"foobar".to_vec()));
+		family.elements.push(IconElement::new(OSType(*b"quux"), b"foobar".to_vec()));
 		family.elements.push(IconElement::new(OSType(*b"baz!"), b"#".to_vec()));
 		let mut output:Vec<u8> = vec![];
 		family.write(&mut output).expect("write failed");
-		assert_eq!(
-			b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#",
-			&output as &[u8]
-		);
+		assert_eq!(b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#", &output as &[u8]);
 	}
 
 	#[test]
@@ -243,8 +226,7 @@ mod tests {
 
 		// Read it in again and check the PNG is untouched.
 		let icon_family = IconFamily::read(out.as_slice()).unwrap();
-		let image =
-			icon_family.get_icon_with_type(IconType::RGBA32_256x256).unwrap();
+		let image = icon_family.get_icon_with_type(IconType::RGBA32_256x256).unwrap();
 		assert_eq!(image.data(), png_data.as_slice());
 	}
 }

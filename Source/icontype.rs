@@ -89,14 +89,8 @@ impl IconType {
 	/// ```
 	/// use tauri_icns::IconType;
 	/// assert_eq!(IconType::from_pixel_size(48, 48), Some(IconType::RGB24_48x48));
-	/// assert_eq!(
-	/// 	IconType::from_pixel_size(256, 256),
-	/// 	Some(IconType::RGBA32_256x256)
-	/// );
-	/// assert_eq!(
-	/// 	IconType::from_pixel_size(1024, 1024),
-	/// 	Some(IconType::RGBA32_512x512_2x)
-	/// );
+	/// assert_eq!(IconType::from_pixel_size(256, 256), Some(IconType::RGBA32_256x256));
+	/// assert_eq!(IconType::from_pixel_size(1024, 1024), Some(IconType::RGBA32_512x512_2x));
 	/// ```
 	pub fn from_pixel_size(width:u32, height:u32) -> Option<IconType> {
 		match (width, height) {
@@ -118,10 +112,7 @@ impl IconType {
 	/// # Examples
 	/// ```
 	/// use tauri_icns::IconType;
-	/// assert_eq!(
-	/// 	IconType::from_pixel_size_and_density(48, 48, 1),
-	/// 	Some(IconType::RGB24_48x48)
-	/// );
+	/// assert_eq!(IconType::from_pixel_size_and_density(48, 48, 1), Some(IconType::RGB24_48x48));
 	/// assert_eq!(
 	/// 	IconType::from_pixel_size_and_density(256, 256, 1),
 	/// 	Some(IconType::RGBA32_256x256)
@@ -131,11 +122,7 @@ impl IconType {
 	/// 	Some(IconType::RGBA32_128x128_2x)
 	/// );
 	/// ```
-	pub fn from_pixel_size_and_density(
-		width:u32,
-		height:u32,
-		density:u32,
-	) -> Option<IconType> {
+	pub fn from_pixel_size_and_density(width:u32, height:u32, density:u32) -> Option<IconType> {
 		match (width, height, density) {
 			(16, 16, 1) => Some(IconType::RGB24_16x16),
 			(32, 32, 1) => Some(IconType::RGB24_32x32),
@@ -229,9 +216,7 @@ impl IconType {
 	/// assert_eq!(IconType::RGBA32_256x256.pixel_width(), 256);
 	/// assert_eq!(IconType::RGBA32_256x256_2x.pixel_width(), 512);
 	/// ```
-	pub fn pixel_width(self) -> u32 {
-		self.screen_width() * self.pixel_density()
-	}
+	pub fn pixel_width(self) -> u32 { self.screen_width() * self.pixel_density() }
 
 	/// Returns the pixel data height of this icon type.  Normally this is the
 	/// same as the screen height, but for 2x "retina" density icons, this will
@@ -244,9 +229,7 @@ impl IconType {
 	/// assert_eq!(IconType::RGBA32_256x256.pixel_height(), 256);
 	/// assert_eq!(IconType::RGBA32_256x256_2x.pixel_height(), 512);
 	/// ```
-	pub fn pixel_height(self) -> u32 {
-		self.screen_height() * self.pixel_density()
-	}
+	pub fn pixel_height(self) -> u32 { self.screen_height() * self.pixel_density() }
 
 	/// Returns the pixel density for this icon type -- that is, 2 for 2x
 	/// "retina" density icons, or 1 for other icon types.
@@ -396,18 +379,14 @@ impl std::str::FromStr for OSType {
 	fn from_str(input:&str) -> Result<OSType, String> {
 		let chars:Vec<char> = input.chars().collect();
 		if chars.len() != 4 {
-			return Err(format!(
-				"OSType string must be 4 chars (was {})",
-				chars.len()
-			));
+			return Err(format!("OSType string must be 4 chars (was {})", chars.len()));
 		}
 		let mut bytes = [0u8; 4];
 		for (i, &ch) in chars.iter().enumerate() {
 			let value = ch as u32;
 			if value > std::u8::MAX as u32 {
 				return Err(format!(
-					"OSType chars must have value of at most 0x{:X} (found \
-					 0x{:X})",
+					"OSType chars must have value of at most 0x{:X} (found 0x{:X})",
 					std::u8::MAX,
 					value
 				));
@@ -490,9 +469,7 @@ mod tests {
 			let width = icon_type.pixel_width();
 			let height = icon_type.pixel_height();
 			let density = icon_type.pixel_density();
-			let from =
-				IconType::from_pixel_size_and_density(width, height, density)
-					.unwrap();
+			let from = IconType::from_pixel_size_and_density(width, height, density).unwrap();
 			assert_eq!(from.pixel_width(), width);
 			assert_eq!(from.pixel_height(), height);
 			assert_eq!(from.pixel_density(), density);
@@ -511,14 +488,8 @@ mod tests {
 					assert!(!icon_type.is_mask());
 					if let Some(mask_type) = icon_type.mask_type() {
 						assert_eq!(mask_type.encoding(), Encoding::Mask8);
-						assert_eq!(
-							icon_type.pixel_width(),
-							mask_type.pixel_width()
-						);
-						assert_eq!(
-							icon_type.pixel_height(),
-							mask_type.pixel_height()
-						);
+						assert_eq!(icon_type.pixel_width(), mask_type.pixel_width());
+						assert_eq!(icon_type.pixel_height(), mask_type.pixel_height());
 					} else {
 						panic!("{:?} is missing a mask type", icon_type);
 					}
@@ -557,8 +528,7 @@ mod tests {
 		);
 		assert_eq!(
 			OSType::from_str("ab\u{2603}d"),
-			Err("OSType chars must have value of at most 0xFF (found 0x2603)"
-				.to_string())
+			Err("OSType chars must have value of at most 0xFF (found 0x2603)".to_string())
 		);
 	}
 }
