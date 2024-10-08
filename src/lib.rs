@@ -98,12 +98,9 @@
 //! # Example usage
 //!
 //! ```no_run
-//! use std::{
-//! 	fs::File,
-//! 	io::{BufReader, BufWriter},
-//! };
-//!
 //! use tauri_icns::{IconFamily, IconType, Image};
+//! use std::fs::File;
+//! use std::io::{BufReader, BufWriter};
 //!
 //! // Load an icon family from an ICNS file.
 //! let file = BufReader::new(File::open("16.icns").unwrap());
