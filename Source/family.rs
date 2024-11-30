@@ -37,6 +37,7 @@ impl IconFamily {
 				image.width(),
 				image.height()
 			);
+
 			Err(Error::new(ErrorKind::InvalidInput, msg))
 		}
 	}
@@ -47,9 +48,11 @@ impl IconFamily {
 	/// dimensions for the selected type.
 	pub fn add_icon_with_type(&mut self, image:&Image, icon_type:IconType) -> io::Result<()> {
 		self.elements.push(IconElement::encode_image_with_type(image, icon_type)?);
+
 		if let Some(mask_type) = icon_type.mask_type() {
 			self.elements.push(IconElement::encode_image_with_type(image, mask_type)?);
 		}
+
 		Ok(())
 	}
 
@@ -60,6 +63,7 @@ impl IconFamily {
 	/// icons.
 	pub fn available_icons(&self) -> Vec<IconType> {
 		let mut result = Vec::new();
+
 		for element in &self.elements {
 			if let Some(icon_type) = element.icon_type() {
 				if !icon_type.is_mask() {
@@ -73,6 +77,7 @@ impl IconFamily {
 				}
 			}
 		}
+
 		result
 	}
 
@@ -85,6 +90,7 @@ impl IconFamily {
 		} else if let Some(mask_type) = icon_type.mask_type() {
 			return self.find_element(mask_type).is_ok();
 		}
+
 		true
 	}
 
@@ -95,8 +101,10 @@ impl IconFamily {
 	/// the if the encoded data is malformed.
 	pub fn get_icon_with_type(&self, icon_type:IconType) -> io::Result<Image> {
 		let element = self.find_element(icon_type)?;
+
 		if let Some(mask_type) = icon_type.mask_type() {
 			let mask = self.find_element(mask_type)?;
+
 			element.decode_image_with_mask(mask)
 		} else {
 			element.decode_image()
@@ -106,8 +114,10 @@ impl IconFamily {
 	/// Private helper method.
 	fn find_element(&self, icon_type:IconType) -> io::Result<&IconElement> {
 		let ostype = icon_type.ostype();
+
 		self.elements.iter().find(|el| el.ostype == ostype).ok_or_else(|| {
 			let msg = format!("the icon family does not contain a '{}' element", ostype);
+
 			Error::new(ErrorKind::NotFound, msg)
 		})
 	}
@@ -115,29 +125,42 @@ impl IconFamily {
 	/// Reads an icon family from an ICNS file.
 	pub fn read<R:Read>(mut reader:R) -> io::Result<IconFamily> {
 		let mut magic = [0u8; 4];
+
 		reader.read_exact(&mut magic)?;
+
 		if magic != *ICNS_MAGIC_LITERAL {
 			let msg = "not an icns file (wrong magic literal)";
+
 			return Err(Error::new(ErrorKind::InvalidData, msg));
 		}
+
 		let file_length = reader.read_u32::<BigEndian>()?;
+
 		let mut file_position:u32 = ICON_FAMILY_HEADER_LENGTH;
+
 		let mut family = IconFamily::new();
+
 		while file_position < file_length {
 			let element = IconElement::read(reader.by_ref())?;
+
 			file_position += element.total_length();
+
 			family.elements.push(element);
 		}
+
 		Ok(family)
 	}
 
 	/// Writes the icon family to an ICNS file.
 	pub fn write<W:Write>(&self, mut writer:W) -> io::Result<()> {
 		writer.write_all(ICNS_MAGIC_LITERAL)?;
+
 		writer.write_u32::<BigEndian>(self.total_length())?;
+
 		for element in &self.elements {
 			element.write(writer.by_ref())?;
 		}
+
 		Ok(())
 	}
 
@@ -145,9 +168,11 @@ impl IconFamily {
 	/// length of the header.
 	pub fn total_length(&self) -> u32 {
 		let mut length = ICON_FAMILY_HEADER_LENGTH;
+
 		for element in &self.elements {
 			length += element.total_length();
 		}
+
 		length
 	}
 }
@@ -171,41 +196,62 @@ mod tests {
 	#[test]
 	fn icon_with_type() {
 		let mut family = IconFamily::new();
+
 		assert!(!family.has_icon_with_type(IconType::RGB24_16x16));
+
 		let image = Image::new(PixelFormat::Gray, 16, 16);
+
 		family.add_icon_with_type(&image, IconType::RGB24_16x16).unwrap();
+
 		assert!(family.has_icon_with_type(IconType::RGB24_16x16));
+
 		assert!(family.get_icon_with_type(IconType::RGB24_16x16).is_ok());
 	}
 
 	#[test]
 	fn write_empty_icon_family() {
 		let family = IconFamily::new();
+
 		assert!(family.is_empty());
+
 		assert_eq!(0, family.elements.len());
+
 		let mut output:Vec<u8> = vec![];
+
 		family.write(&mut output).expect("write failed");
+
 		assert_eq!(b"icns\0\0\0\x08", &output as &[u8]);
 	}
 
 	#[test]
 	fn read_icon_family_with_fake_elements() {
 		let input:Cursor<&[u8]> = Cursor::new(b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#");
+
 		let family = IconFamily::read(input).expect("read failed");
+
 		assert_eq!(2, family.elements.len());
+
 		assert_eq!(OSType(*b"quux"), family.elements[0].ostype);
+
 		assert_eq!(6, family.elements[0].data.len());
+
 		assert_eq!(OSType(*b"baz!"), family.elements[1].ostype);
+
 		assert_eq!(1, family.elements[1].data.len());
 	}
 
 	#[test]
 	fn write_icon_family_with_fake_elements() {
 		let mut family = IconFamily::new();
+
 		family.elements.push(IconElement::new(OSType(*b"quux"), b"foobar".to_vec()));
+
 		family.elements.push(IconElement::new(OSType(*b"baz!"), b"#".to_vec()));
+
 		let mut output:Vec<u8> = vec![];
+
 		family.write(&mut output).expect("write failed");
+
 		assert_eq!(b"icns\0\0\0\x1fquux\0\0\0\x0efoobarbaz!\0\0\0\x09#", &output as &[u8]);
 	}
 
@@ -213,20 +259,27 @@ mod tests {
 	#[cfg(feature = "pngio")]
 	fn png_unchanged() {
 		let mut icon_family = IconFamily::new();
+
 		let mut png_data = Vec::new();
+
 		BufReader::new(File::open("tests/png/256x256.png").unwrap())
 			.read_to_end(&mut png_data)
 			.unwrap();
+
 		let image = Image::read_png(png_data.as_slice()).unwrap();
+
 		icon_family.add_icon(&image).unwrap();
 
 		// Save the updated icon family to a new ICNS 'file'.
 		let mut out = Vec::new();
+
 		icon_family.write(&mut out).unwrap();
 
 		// Read it in again and check the PNG is untouched.
 		let icon_family = IconFamily::read(out.as_slice()).unwrap();
+
 		let image = icon_family.get_icon_with_type(IconType::RGBA32_256x256).unwrap();
+
 		assert_eq!(image.data(), png_data.as_slice());
 	}
 }

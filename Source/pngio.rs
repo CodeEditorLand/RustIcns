@@ -7,8 +7,11 @@ impl Image {
 	/// Reads an image from a PNG file.
 	pub fn read_png<R:Read>(mut input:R) -> io::Result<Image> {
 		let mut v = Vec::new();
+
 		input.read_to_end(&mut v)?;
+
 		let image = Image::decode_from_png(v.as_slice())?;
+
 		Ok(Image {
 			format:PixelFormat::PNG,
 			width:image.width,
@@ -20,8 +23,11 @@ impl Image {
 	/// Internal function to decode a PNG.
 	pub fn decode_from_png<R:Read>(input:R) -> io::Result<Image> {
 		let decoder = png::Decoder::new(input);
+
 		let mut reader = decoder.read_info()?;
+
 		let info = reader.info();
+
 		let pixel_format = match info.color_type {
 			png::ColorType::Rgba => PixelFormat::RGBA,
 			png::ColorType::Rgb => PixelFormat::RGB,
@@ -35,6 +41,7 @@ impl Image {
 				));
 			},
 		};
+
 		if info.bit_depth != png::BitDepth::Eight {
 			// TODO: Support other bit depths.
 			return Err(io::Error::new(
@@ -42,9 +49,13 @@ impl Image {
 				format!("unsupported PNG bit depth: {:?}", info.bit_depth),
 			));
 		}
+
 		let mut image = Image::new(pixel_format, info.width, info.height);
+
 		assert_eq!(image.data().len(), reader.output_buffer_size());
+
 		reader.next_frame(image.data_mut())?;
+
 		Ok(image)
 	}
 
@@ -62,10 +73,15 @@ impl Image {
 				return output.write(&self.data).map(|_| ());
 			},
 		};
+
 		let mut encoder = png::Encoder::new(output, self.width, self.height);
+
 		encoder.set_color(color_type);
+
 		encoder.set_depth(png::BitDepth::Eight);
+
 		let mut writer = encoder.write_header()?;
+
 		writer.write_image_data(&self.data).map_err(|err| {
 			match err {
 				png::EncodingError::IoError(err) => err,

@@ -58,6 +58,7 @@ impl IconType {
 	/// Get the icon type associated with the given OSType, if any.
 	pub fn from_ostype(ostype:OSType) -> Option<IconType> {
 		let OSType(raw_ostype) = ostype;
+
 		match &raw_ostype {
 			b"is32" => Some(IconType::RGB24_16x16),
 			b"s8mk" => Some(IconType::Mask8_16x16),
@@ -365,10 +366,13 @@ pub struct OSType(pub [u8; 4]);
 impl fmt::Display for OSType {
 	fn fmt(&self, out:&mut fmt::Formatter) -> Result<(), fmt::Error> {
 		let &OSType(raw) = self;
+
 		for &byte in &raw {
 			let character = std::char::from_u32(u32::from(byte)).unwrap();
+
 			write!(out, "{}", character)?;
 		}
+
 		Ok(())
 	}
 }
@@ -378,12 +382,16 @@ impl std::str::FromStr for OSType {
 
 	fn from_str(input:&str) -> Result<OSType, String> {
 		let chars:Vec<char> = input.chars().collect();
+
 		if chars.len() != 4 {
 			return Err(format!("OSType string must be 4 chars (was {})", chars.len()));
 		}
+
 		let mut bytes = [0u8; 4];
+
 		for (i, &ch) in chars.iter().enumerate() {
 			let value = ch as u32;
+
 			if value > std::u8::MAX as u32 {
 				return Err(format!(
 					"OSType chars must have value of at most 0x{:X} (found 0x{:X})",
@@ -391,8 +399,10 @@ impl std::str::FromStr for OSType {
 					value
 				));
 			}
+
 			bytes[i] = value as u8;
 		}
+
 		Ok(OSType(bytes))
 	}
 }
@@ -447,7 +457,9 @@ mod tests {
 	fn icon_type_ostype_round_trip() {
 		for icon_type in &ALL_ICON_TYPES {
 			let ostype = icon_type.ostype();
+
 			let from = IconType::from_ostype(ostype);
+
 			assert_eq!(Some(*icon_type), from);
 		}
 	}
@@ -456,9 +468,13 @@ mod tests {
 	fn icon_type_size_round_trip() {
 		for icon_type in &ALL_ICON_TYPES {
 			let width = icon_type.pixel_width();
+
 			let height = icon_type.pixel_height();
+
 			let from = IconType::from_pixel_size(width, height).unwrap();
+
 			assert_eq!(from.pixel_width(), width);
+
 			assert_eq!(from.pixel_height(), height);
 		}
 	}
@@ -467,11 +483,17 @@ mod tests {
 	fn icon_type_size_and_density_round_trip() {
 		for icon_type in &ALL_ICON_TYPES {
 			let width = icon_type.pixel_width();
+
 			let height = icon_type.pixel_height();
+
 			let density = icon_type.pixel_density();
+
 			let from = IconType::from_pixel_size_and_density(width, height, density).unwrap();
+
 			assert_eq!(from.pixel_width(), width);
+
 			assert_eq!(from.pixel_height(), height);
+
 			assert_eq!(from.pixel_density(), density);
 		}
 	}
@@ -482,13 +504,17 @@ mod tests {
 			match icon_type.encoding() {
 				Encoding::Mask8 => {
 					assert!(icon_type.is_mask());
+
 					assert_eq!(icon_type.mask_type(), None);
 				},
 				Encoding::RLE24 => {
 					assert!(!icon_type.is_mask());
+
 					if let Some(mask_type) = icon_type.mask_type() {
 						assert_eq!(mask_type.encoding(), Encoding::Mask8);
+
 						assert_eq!(icon_type.pixel_width(), mask_type.pixel_width());
+
 						assert_eq!(icon_type.pixel_height(), mask_type.pixel_height());
 					} else {
 						panic!("{:?} is missing a mask type", icon_type);
@@ -496,6 +522,7 @@ mod tests {
 				},
 				Encoding::JP2PNG => {
 					assert!(!icon_type.is_mask());
+
 					assert_eq!(icon_type.mask_type(), None);
 				},
 			}
@@ -505,14 +532,18 @@ mod tests {
 	#[test]
 	fn ostype_to_and_from_str() {
 		let ostype = OSType::from_str("abcd").expect("failed to parse OSType");
+
 		assert_eq!(ostype.to_string(), "abcd".to_string());
 	}
 
 	#[test]
 	fn ostype_to_and_from_str_non_ascii() {
 		let ostype = OSType(*b"sp\xf6b");
+
 		let string = ostype.to_string();
+
 		assert_eq!(string, "sp\u{f6}b".to_string());
+
 		assert_eq!(OSType::from_str(&string), Ok(ostype));
 	}
 
@@ -522,10 +553,12 @@ mod tests {
 			OSType::from_str("abc"),
 			Err("OSType string must be 4 chars (was 3)".to_string())
 		);
+
 		assert_eq!(
 			OSType::from_str("abcde"),
 			Err("OSType string must be 4 chars (was 5)".to_string())
 		);
+
 		assert_eq!(
 			OSType::from_str("ab\u{2603}d"),
 			Err("OSType chars must have value of at most 0xFF (found 0x2603)".to_string())
