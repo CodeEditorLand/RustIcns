@@ -1,16 +1,3 @@
-[package]
-name = "tauri-icns"
-version = "0.1.0"
-authors = [
-	"Matthew D. Steele <mdsteele@alum.mit.edu>",
-	"Tauri Programme within The Commons Conservancy",
-]
-description = "A library for encoding/decoding Apple Icon Image (.icns) files."
-repository = "https://github.com/tauri-apps/rust-icns"
-keywords = ["icns", "icon", "image"]
-license-file = "LICENSE"
-readme = "README.md"
-
 [dependencies]
 byteorder = { version = "1" }
 png = { version = "0.17", optional = true }
@@ -18,3 +5,19 @@ png = { version = "0.17", optional = true }
 [features]
 default = ["pngio"]
 pngio = ["png"]
+
+[lib]
+path = "Source/lib.rs"
+
+[package]
+authors = [
+	"Matthew D. Steele <mdsteele@alum.mit.edu>",
+	"Tauri Programme within The Commons Conservancy",
+]
+description = "A library for encoding/decoding Apple Icon Image (.icns) files."
+keywords = ["icns", "icon", "image"]
+license-file = "LICENSE"
+name = "tauri-icns"
+readme = "README.md"
+repository = "https://github.com/tauri-apps/rust-icns"
+version = "0.1.0"
